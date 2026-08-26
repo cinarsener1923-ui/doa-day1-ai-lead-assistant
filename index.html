@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Müşteri &amp; Randevu Asistanı</title>
+<meta name="description" content="Hizmet işletmeleri için AI destekli müşteri ve randevu asistanı. Gelen talepleri anlar, gerekli bilgileri toplar ve uygun olanları randevuya yönlendirir.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230F6F6C'/><circle cx='16' cy='16' r='5' fill='%23FAFAF9'/></svg>">
+<style>
+  :root{
+    --bg:#FAFAF9;
+    --surface:#FFFFFF;
+    --text:#141413;
+    --muted:#5C5A55;
+    --line:#E3E1DC;
+    --accent:#0F6F6C;
+    --accent-ink:#FFFFFF;
+    --danger:#A82F1F;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#131413;
+      --surface:#1B1D1C;
+      --text:#ECEAE5;
+      --muted:#A3A099;
+      --line:#2E312F;
+      --accent:#4FB3AE;
+      --accent-ink:#0B1211;
+      --danger:#E88A7B;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 20px;}
+  section{padding:42px 0;border-top:1px solid var(--line);}
+  h1,h2,h3{line-height:1.25;letter-spacing:-0.015em;margin:0;}
+  h1{font-size:clamp(1.8rem,4.4vw,2.5rem);font-weight:650;max-width:18ch;}
+  h2{font-size:clamp(1.3rem,3.2vw,1.65rem);font-weight:620;margin-bottom:8px;}
+  h3{font-size:1.03rem;font-weight:620;margin-bottom:4px;}
+  p{margin:0;}
+  .lead{color:var(--muted);max-width:62ch;}
+  .eyebrow{
+    font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px;
+  }
+  a{color:var(--accent);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+
+  /* Header */
+  header{padding:20px 0;}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .brand{font-weight:620;font-size:.98rem;letter-spacing:-0.01em;}
+  .bar a{font-size:.94rem;text-decoration:none;font-weight:520;}
+  .bar a:hover{text-decoration:underline;}
+
+  /* Hero */
+  .hero{border-top:none;padding-top:32px;padding-bottom:44px;}
+  .hero .lead{margin-top:16px;font-size:1.06rem;}
+  .hero-grid{display:grid;gap:32px;align-items:center;}
+  .hero-grid>*{min-width:0;}
+  @media (min-width:900px){
+    .hero-grid{grid-template-columns:1.02fr .98fr;gap:48px;}
+  }
+
+  /* Illustrative product mockup */
+  .mock{
+    margin:0;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;padding:16px 16px 18px;
+  }
+  .mock-cap{
+    font-size:.72rem;font-weight:620;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);padding-bottom:12px;margin-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .msg{margin-bottom:12px;max-width:90%;}
+  .msg .who{
+    display:block;font-size:.7rem;font-weight:620;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:5px;
+  }
+  .msg p{
+    font-size:.93rem;line-height:1.5;padding:10px 13px;border-radius:10px;
+    background:var(--bg);border:1px solid var(--line);
+  }
+  .msg.out{margin-left:auto;}
+  .msg.out .who{color:var(--accent);text-align:right;}
+  .msg.out p{background:var(--accent);color:var(--accent-ink);border-color:transparent;}
+  .mock-lead{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .mock-lead-title{
+    display:block;font-size:.7rem;font-weight:620;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:9px;
+  }
+  .mock-lead dl{margin:0;display:grid;gap:7px;}
+  .mock-lead .row{display:flex;justify-content:space-between;gap:12px;font-size:.9rem;}
+  .mock-lead dt{color:var(--muted);}
+  .mock-lead dd{margin:0;font-weight:560;}
+  .cta{
+    display:inline-block;margin-top:28px;
+    background:var(--accent);color:var(--accent-ink);
+    text-decoration:none;font-weight:600;font-size:1rem;
+    padding:14px 24px;min-height:48px;border-radius:var(--radius);
+  }
+  .cta:hover{filter:brightness(1.08);}
+  .note{margin-top:14px;font-size:.88rem;color:var(--muted);max-width:52ch;}
+
+  /* Lists & grids */
+  .grid{display:grid;gap:16px;margin-top:20px;}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(238px,1fr));}
+  .steps{grid-template-columns:repeat(auto-fit,minmax(196px,1fr));}
+  .probs{
+    list-style:none;padding:0;margin-bottom:0;
+    grid-template-columns:repeat(auto-fit,minmax(214px,1fr));
+  }
+  .probs li{color:var(--muted);font-size:.95rem;line-height:1.5;}
+  .card{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px;
+  }
+  .card p{color:var(--muted);font-size:.95rem;margin-top:6px;}
+  .num{
+    font-variant-numeric:tabular-nums;font-size:.8rem;font-weight:660;
+    color:var(--accent);letter-spacing:.06em;display:block;margin-bottom:8px;
+  }
+
+  /* Sectors */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding:0;list-style:none;}
+  .chips li{
+    border:1px solid var(--line);border-radius:999px;
+    padding:6px 14px;font-size:.9rem;color:var(--muted);background:var(--surface);
+  }
+
+  /* Demo scope */
+  .scope{padding:28px 0;}
+  .scope-box{
+    background:var(--surface);border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:var(--radius);padding:16px 18px;max-width:74ch;
+  }
+  .scope-box h2{font-size:1.02rem;margin-bottom:6px;}
+  .scope-box p{font-size:.93rem;color:var(--muted);}
+
+  /* Form */
+  #iletisim{scroll-margin-top:24px;}
+  .panel{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:24px;margin-top:24px;max-width:560px;
+  }
+  .demo-note{
+    font-size:.88rem;color:var(--muted);
+    border-left:3px solid var(--accent);padding-left:12px;margin-bottom:22px;
+  }
+  .field{margin-bottom:18px;}
+  label{display:block;font-size:.92rem;font-weight:560;margin-bottom:6px;}
+  .opt{font-weight:400;color:var(--muted);}
+  input,textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--text);
+    background:var(--bg);border:1px solid var(--line);border-radius:8px;
+    padding:12px 13px;min-height:48px;
+  }
+  textarea{min-height:104px;resize:vertical;}
+  input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--danger);}
+  .err{display:block;min-height:0;font-size:.85rem;color:var(--danger);margin-top:6px;}
+  button{
+    font:inherit;font-weight:600;font-size:1rem;cursor:pointer;
+    background:var(--accent);color:var(--accent-ink);
+    border:none;border-radius:var(--radius);padding:14px 24px;min-height:48px;width:100%;
+  }
+  button:hover{filter:brightness(1.08);}
+  .ghost{
+    background:transparent;color:var(--accent);
+    border:1px solid var(--line);width:auto;margin-top:18px;
+  }
+  .hidden{display:none;}
+  #basarili h3{font-size:1.12rem;}
+  #basarili p{color:var(--muted);font-size:.95rem;margin-top:10px;}
+  #basarili strong{color:var(--text);}
+
+  footer{
+    border-top:1px solid var(--line);padding:24px 0 34px;
+    font-size:.88rem;color:var(--muted);
+  }
+
+  @media (max-width:600px){
+    body{font-size:16px;}
+    section{padding:34px 0;}
+    .scope{padding:24px 0;}
+    .cta{display:block;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <span class="brand">AI Müşteri &amp; Randevu Asistanı</span>
+    <a href="#iletisim">İletişim</a>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Erken aşama ürün</p>
+        <h1>Gelen müşteri mesajları cevapsız kalmasın.</h1>
+        <p class="lead">Hizmet işletmeleri için AI destekli müşteri ve randevu asistanı. Gelen talepleri anlar, gerekli bilgileri toplar ve uygun olanları randevuya yönlendirir.</p>
+        <a class="cta" href="#iletisim">Erken erişim için bilgi bırakın</a>
+        <p class="note">Erken aşama bir üründür. Şu anda ilgi topluyor ve ilk kullanıcılarla birlikte geliştiriyoruz.</p>
+      </div>
+
+      <figure class="mock">
+        <figcaption class="mock-cap">Örnek akış — temsili arayüz görseli</figcaption>
+
+        <div class="msg in">
+          <span class="who">Müşteri</span>
+          <p>Merhaba, yarın için randevu almak istiyorum.</p>
+        </div>
+
+        <div class="msg out">
+          <span class="who">AI Asistan</span>
+          <p>Elbette. Hangi hizmet için randevu almak istiyorsunuz?</p>
+        </div>
+
+        <div class="mock-lead">
+          <span class="mock-lead-title">Lead özeti</span>
+          <dl>
+            <div class="row"><dt>Talep</dt><dd>Randevu</dd></div>
+            <div class="row"><dt>Durum</dt><dd>Bilgi bekleniyor</dd></div>
+          </dl>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Sorun tek bir kanalda değil</h2>
+      <p class="lead">Talep artınca zorlaşan şey işin kendisi değil, iletişimin dağılması oluyor.</p>
+      <ul class="grid probs">
+        <li class="card">Mesajlar WhatsApp, Instagram, web formu ve telefon arasında dağılıyor.</li>
+        <li class="card">Aynı sorular gün içinde defalarca cevaplanıyor.</li>
+        <li class="card">Yoğun saatlerde geç dönülen talepler kayboluyor.</li>
+        <li class="card">Randevu düzenlemek manuel yazışmaya bağlı kalıyor.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Ne yapar?</h2>
+      <p class="lead">Asistanın üstlenmesi hedeflenen üç iş.</p>
+      <div class="grid cards">
+        <div class="card">
+          <h3>Talebi anlar</h3>
+          <p>Gelen mesajı okur, müşterinin ne istediğini sınıflandırır ve eksik bilgileri sorar.</p>
+        </div>
+        <div class="card">
+          <h3>Lead bilgisini toplar</h3>
+          <p>İsim, iletişim ve talep detayını yapılandırılmış tek bir kayda dönüştürür.</p>
+        </div>
+        <div class="card">
+          <h3>Randevuya yönlendirir</h3>
+          <p>Uygun talepleri randevu adımına taşır, uygun olmayanları ayırır.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Nasıl çalışır?</h2>
+      <p class="lead">Kurgulanan akış dört adımdan oluşuyor.</p>
+      <div class="grid steps">
+        <div class="card">
+          <span class="num">01</span>
+          <h3>Mesaj gelir</h3>
+          <p>Müşteri mevcut kanallarınızdan biri üzerinden yazar.</p>
+        </div>
+        <div class="card">
+          <span class="num">02</span>
+          <h3>Asistan yanıtlar</h3>
+          <p>Talebi anlar ve gerekli soruları sorar.</p>
+        </div>
+        <div class="card">
+          <span class="num">03</span>
+          <h3>Bilgi yapılandırılır</h3>
+          <p>Ad, iletişim ve talep tek bir kayda dönüşür.</p>
+        </div>
+        <div class="card">
+          <span class="num">04</span>
+          <h3>Randevu adımı</h3>
+          <p>Uygun müşteri randevuya yönlendirilir, siz onaylarsınız.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Kimler için</h2>
+      <p class="lead">Randevu ve talep üzerine çalışan işletmeler için tasarlanıyor. Tek bir sektöre bağlı değil.</p>
+      <ul class="chips">
+        <li>Güzellik merkezleri</li>
+        <li>Emlak</li>
+        <li>Oteller</li>
+        <li>Klinikler</li>
+        <li>Teknik servis</li>
+        <li>Danışmanlık</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="scope">
+    <div class="wrap">
+      <div class="scope-box">
+        <h2>Demo kapsamı</h2>
+        <p>Bu sürüm ürünün konseptini ve arayüzünü gösterir. AI asistanı, WhatsApp entegrasyonu ve randevu bağlantısı henüz bağlı değildir. Sayfadaki örnek akış temsilidir.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="iletisim">
+    <div class="wrap">
+      <h2>İlgileniyorsanız bilgi bırakın</h2>
+      <p class="lead">Erken erişim listesi için.</p>
+
+      <div class="panel">
+        <p class="demo-note">Bu form şu anda <strong>demo modundadır</strong>. Girdiğiniz bilgiler hiçbir yere gönderilmez ve kaydedilmez.</p>
+
+        <form id="form" novalidate>
+          <div class="field">
+            <label for="ad">Ad Soyad</label>
+            <input id="ad" name="ad" type="text" autocomplete="name" aria-describedby="ad-err">
+            <span class="err" id="ad-err" aria-live="polite"></span>
+          </div>
+
+          <div class="field">
+            <label for="tel">Telefon</label>
+            <input id="tel" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="0555 123 45 67" aria-describedby="tel-err">
+            <span class="err" id="tel-err" aria-live="polite"></span>
+          </div>
+
+          <div class="field">
+            <label for="mesaj">Kısa mesaj <span class="opt">(isteğe bağlı)</span></label>
+            <textarea id="mesaj" name="mesaj" maxlength="500" aria-describedby="mesaj-err"></textarea>
+            <span class="err" id="mesaj-err" aria-live="polite"></span>
+          </div>
+
+          <button type="submit">Formu gönder (demo)</button>
+        </form>
+
+        <div id="basarili" class="hidden" tabindex="-1">
+          <h3>Form doğrulandı — demo</h3>
+          <p>Girdiğiniz bilgiler doğrulandı ancak <strong>hiçbir yere gönderilmedi ve kaydedilmedi.</strong> Gerçek gönderim henüz aktif değil.</p>
+          <button type="button" class="ghost" id="tekrar">Formu tekrar doldur</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    AI Müşteri &amp; Randevu Asistanı — geliştirme aşamasındaki bir üründür. 2026
+  </div>
+</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('form');
+  var basarili = document.getElementById('basarili');
+  var tekrar = document.getElementById('tekrar');
+  var alanlar = ['ad', 'tel', 'mesaj'];
+  var denendi = false;
+
+  // TODO(Faz 2): burası gerçek lead uç noktasına POST atacak.
+  // Sayfanın geri kalanı değişmeden sadece bu fonksiyon güncellenir.
+  function submitLead(payload) {
+    return Promise.resolve({ ok: true, demo: true });
+  }
+
+  function telNormalize(v) {
+    var d = v.replace(/\D/g, '');
+    if (d.length === 12 && d.indexOf('90') === 0) d = d.slice(2);
+    if (d.length === 11 && d.charAt(0) === '0') d = d.slice(1);
+    return d;
+  }
+
+  function hata(id, mesaj) {
+    var alan = document.getElementById(id);
+    document.getElementById(id + '-err').textContent = mesaj;
+    if (mesaj) alan.setAttribute('aria-invalid', 'true');
+    else alan.removeAttribute('aria-invalid');
+    return !mesaj;
+  }
+
+  function dogrula() {
+    var ad = document.getElementById('ad').value.trim();
+    var tel = telNormalize(document.getElementById('tel').value);
+
+    var adOk = hata('ad', ad.length >= 2 ? '' : 'Lütfen ad ve soyadınızı yazın.');
+    var telOk = hata('tel', /^5\d{9}$/.test(tel) ? '' : 'Geçerli bir telefon numarası girin. Örnek: 0555 123 45 67');
+
+    return adOk && telOk;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    denendi = true;
+
+    if (!dogrula()) {
+      var ilk = form.querySelector('[aria-invalid="true"]');
+      if (ilk) ilk.focus();
+      return;
+    }
+
+    var payload = {
+      name: document.getElementById('ad').value.trim(),
+      phone: telNormalize(document.getElementById('tel').value),
+      message: document.getElementById('mesaj').value.trim(),
+      submittedAt: new Date().toISOString()
+    };
+
+    submitLead(payload).then(function () {
+      form.classList.add('hidden');
+      basarili.classList.remove('hidden');
+      basarili.focus();
+    });
+  });
+
+  alanlar.forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () {
+      if (denendi) dogrula();
+    });
+  });
+
+  tekrar.addEventListener('click', function () {
+    form.reset();
+    denendi = false;
+    alanlar.forEach(function (id) { hata(id, ''); });
+    basarili.classList.add('hidden');
+    form.classList.remove('hidden');
+    document.getElementById('ad').focus();
+  });
+})();
+</script>
+
+</body>
+</html>
