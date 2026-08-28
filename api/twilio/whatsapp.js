@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
   }
 
   const signature = req.headers['x-twilio-signature'];
-  const url = `https://${req.headers.host}${req.url}`;
+  const url = 'https://ai-musteri-randevu-asistani.vercel.app/api/twilio/whatsapp';
   const params = req.body || {};
 
   const isValid = twilio.validateRequest(AUTH_TOKEN, signature, url, params);
