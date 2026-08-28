@@ -1,0 +1,9 @@
+{
+  "name": "ai-musteri-randevu-asistani",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Statik tanitim sayfasi + Twilio inbound voice webhook (Vercel serverless).",
+  "dependencies": {
+    "twilio": "^5.3.0"
+  }
+}

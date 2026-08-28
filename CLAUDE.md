@@ -83,3 +83,13 @@ AI/LLM çağrısı · WhatsApp/Instagram entegrasyonu · n8n · backend · verit
 ## Sonraki faz notu
 
 Form gerçekten veri göndermeye başladığı anda **KVKK aydınlatma metni zorunlu hale gelir**. Ayrıca gerçek bir gönderim ucu eklenmeden sayfa gerçek potansiyel müşterilere duyurulmamalıdır.
+
+## Faz 2 — Twilio Inbound Voice (MVP)
+
+Statik tanıtım sayfasının (`index.html`) yanına, Day-1 kapsamının dışında, ayrı bir backend fazı olarak eklendi. `index.html` değiştirilmedi.
+
+- **Eklenen dosyalar:** `package.json` (tek bağımlılık: `twilio`), `api/twilio/voice.js` (Vercel serverless function).
+- **Akış:** Twilio sanal numarasına gelen çağrı → `POST /api/twilio/voice` → imza doğrulama (`X-Twilio-Signature`) → ilk çağrıda karşılama + `<Gather input="speech" language="tr-TR">` → `SpeechResult` ile gelen ikinci istekte sabit Türkçe `<Say>` cevabı + `<Hangup/>`.
+- **Gerçek AI/LLM çağrısı yok.** Cevap metni sabit; ileride AI mantığı eklenecekse `api/twilio/voice.js` içindeki cevap üretim kısmı değiştirilecek.
+- **Gerekli Environment Variables (Vercel):** `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`.
+- **Kapsam dışı:** SMS, WhatsApp otomasyonu, outbound call, CRM, dashboard, veritabanı, Media Streams/WebSocket.
